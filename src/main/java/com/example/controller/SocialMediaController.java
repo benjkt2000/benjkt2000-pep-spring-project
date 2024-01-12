@@ -77,8 +77,8 @@ public class SocialMediaController {
     }
 
     @DeleteMapping("messages/{message_id}")
-    public ResponseEntity<Integer> deleteMessageById(@PathVariable String message_id) {
-        Integer rowsChanged = this.messageService.discardMessageById(Integer.parseInt(message_id));
+    public ResponseEntity<Long> deleteMessageById(@PathVariable String message_id) {
+        Long rowsChanged = this.messageService.discardMessageById(Integer.parseInt(message_id));
 
         if(rowsChanged <= 0)
             return ResponseEntity.status(HttpStatus.OK).body(null);
@@ -87,13 +87,21 @@ public class SocialMediaController {
     }
 
     @PatchMapping("messages/{message_id}")
-    public ResponseEntity<Integer> patchMessageById(@PathVariable String message_id) {
-        Message updatedMessage = this.messageService.updateMessageById(Integer.parseInt(message_id));
+    public ResponseEntity<Integer> patchMessageById(@PathVariable String message_id, @RequestBody Message message) {
+        Integer rowsChanged = this.messageService.updateMessageById(Integer.parseInt(message_id), message);
 
-        if(updatedMessage == null)
+        if(rowsChanged == null)
             return ResponseEntity.status(400).body(null);
 
-        return ResponseEntity.status(HttpStatus.OK).body(1);
+        return ResponseEntity.status(HttpStatus.OK).body(rowsChanged);
+    }
+
+    @GetMapping("accounts/{account_id}/messages")
+    public ResponseEntity<List<Message>> getMessagesByUserid(@PathVariable String account_id) {
+        List<Message> messages = this.messageService.retrieveMessagesByUserId(Integer.parseInt(account_id));
+
+        return ResponseEntity.status(HttpStatus.OK).body(messages);
+
     }
 
 

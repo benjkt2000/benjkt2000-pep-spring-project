@@ -7,6 +7,9 @@ import com.example.repository.AccountRepository;
 
 import java.util.List;
 import java.util.Optional;
+
+import javax.transaction.Transactional;
+
 import java.lang.Integer;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,23 +51,26 @@ public class MessageService {
             return null;
     }
 
-    public Integer discardMessageById(int messageId) {
-        Optional<Message> messageOptional = this.messageRepository.findById(messageId);
+    @Transactional
+    public long discardMessageById(Integer messageId) {
+        long numOfRowsAffected = this.messageRepository.deleteByMessageId(messageId);
 
-        if(messageOptional.isPresent()) {
-            this.messageRepository.deleteById(messageId);
-            return 1;
-        }
-
-        return 0;
+        return numOfRowsAffected;
     }
 
-    public Message updateMessageById(Integer messageId) {
-        Message retrievedMessage = this.retrieveMessageById(messageId);
-        
-        if(retrievedMessage.getMessage_text().trim().length() <= 0 || retrievedMessage.getMessage_text().length() >= 255) 
+    @Transactional
+    public Integer updateMessageById(Integer messageId, Message message) {
+        Message existingMessage = this.retrieveMessageById(messageId);
+    
+        if(existingMessage == null)
+            return null;
+        if(message.getMessage_text().trim().length() <= 0 || message.getMessage_text().length() >= 255) 
             return null;
 
-        return this.messageRepository.save(retrievedMessage);
+        return this.messageRepository.updateByMessageId(message.getMessage_text(), messageId);
+    }
+
+    public List<Message> retrieveMessagesByUserId(Integer accountId) {
+        return this.messageRepository.findAllMessagesByAccountId(accountId);
     }
 }
